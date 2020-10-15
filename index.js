@@ -6,7 +6,7 @@ const options = require('./utils/options');
 
 
 const start = (client = new Client()) => {
-    console.log([RIZQY], color ('Red Emperor', 'yellow'))
+    console.log('[Rizqy]', color ('Rizqy - Bot', 'yellow'))
     console.log('[CLIENT] Client Running')
     
     client.onStateChanged((state) => {
@@ -14,7 +14,7 @@ const start = (client = new Client()) => {
         if (state ==='CONFLICT') client.forceRefocus()
     })
 
-    client.onMassage((message) => {
+    client.onMessage((message) => {
         client.getAmountOfLoadedMessages()  //* Clear message cache if cache more than blablabla (default == 3000)
         .then((msg) => {
             if (msg >= 4000){
