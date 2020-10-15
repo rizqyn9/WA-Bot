@@ -1,27 +1,26 @@
 exports.textTnC = () => {
     return `
-Source code / bot ini merupakan program open-source (gratis) yang ditulis menggunakan Javascript.
+    *Salam Rizqy-Bot*
+    Source code disini ditulis dengan Javascript.
 
-Dengan menggunakan source code / bot ini maka anda setuju dengan Syarat dan Kondisi sebagai berikut:
-- Source code / bot tidak menyimpan data anda di server kami.
-- Source code / bot tidak bertanggung jawab atas sticker yang anda buat dari bot ini serta video, gambar maupun data lainnya yang anda dapatkan dari Source code / bot ini.
-- Source code / bot tidak boleh digunakan untuk layanan yang bertujuan/berkontribusi dalam: 
-    • seks / perdagangan manusia
-    • perjudian
-    • perilaku adiktif yang merugikan 
-    • kejahatan
-    • kekerasan (kecuali jika diperlukan untuk melindungi keselamatan publik)
-    • pembakaran hutan / penggundulan hutan
-    • ujaran kebencian atau diskriminasi berdasarkan usia, jenis kelamin, identitas gender, ras, seksualitas, agama, kebangsaan
-Best regards, Rizqy Prastya Ari Nugroho.`
+    Dengan menggunakan source code / bot maka anda setuju dengan syarat dibawah ini :
+    - Bot tidak menyimpan data anda di server kami.
+    - Bot tidak bertanggung atas sticker yang anda buat dari bot ini
+
+    Udah sih aturan nya baru ini,
+    Bila terdapat masalah pada bot ini silahkan hubungi no. dibawah ini
+
+    *Rizqy Prastya Ari Nugroho*
+    08985665498 `
 }
 
 exports.textMenu = (pushname) => {
     return `
-Hi, ${pushname}! 👋️
-Berikut adalah beberapa fitur yang ada pada bot ini!✨
+Halo ${pushname}! 
 
-Sticker Creator:
+Menu dan cara penggunaan bot ini :
+
+*Sticker Creator: *
 1. *#sticker*
 Untuk merubah gambar menjadi sticker. 
 Penggunaan: kirim gambar dengan caption #sticker atau balas gambar yang sudah dikirim dengan #sticker

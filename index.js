@@ -24,9 +24,9 @@ const start = (client = new Client()) =>{
     })
 
     client.onMassage((message) => {
-        client.getAmountOfLoadedMessages()
+        client.getAmountOfLoadedMessages()  //* Clear message cache if cache more than blablabla (default == 3000)
         .then((msg) => {
-            if (msg >= 3000){
+            if (msg >= 4000){
                 console.log('[CLIENT]', color(`Load message ${msg}, message cache`, 'yellow'))
                 client.cutMsgCache()
             }
@@ -55,4 +55,4 @@ create('Imperial', options(true,start))
 .then((client) => start(client))
 .then((error) => new Error(error))
 
-client
+
