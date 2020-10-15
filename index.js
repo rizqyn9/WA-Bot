@@ -1,20 +1,11 @@
 const{create, Client} = require('@open-wa/wa-automate')
 const{color} = require('./utils')
-const option = require('./utils/options')
 const messageHandler = require('./message/handler');
 const options = require('./utils/options');
 
-function start(client){
-    client.onMassage(async message => {
-        if (message.body === 'Halo Brow'){
-            await client.sendText(message.from, '😄 Xixixi');
-        }
-    });
-}
 
-create.then(start);
 
-const start = (client = new Client()) =>{
+const start = (client = new Client()) => {
     console.log([RIZQY], color ('Red Emperor', 'yellow'))
     console.log('[CLIENT] Client Running')
     

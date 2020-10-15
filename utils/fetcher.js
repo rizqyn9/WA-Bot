@@ -45,10 +45,12 @@ const fetchText = (url, options) => {
 }
 
 
-// * Fetch Base64 from url
+/** // * Fetch Base64 from url
+* @param {String} url
+*/
 
 const fetchBase64 = (url, mimetype) => {
-    return new Promise(resolve, reject) => {
+    return new Promise((resolve, reject) => {
         console.log('Get base64 from : ', url)
         return fetch(url)
             .then((res) => {
@@ -60,7 +62,7 @@ const fetchBase64 = (url, mimetype) => {
                 console.error(err)
                 reject(err)
             })
-    }
+    })
 }
 
 /**
