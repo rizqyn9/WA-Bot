@@ -36,12 +36,6 @@ module.exports = msgHandler = async (client = new Client(), message) => {
         const url = args.length !== 0 ? args[0] : ''
         const isQuotedImage = quotedMsg && quotedMsg.type === 'image'
 
-//ANCHOR String Declaration
-//! Text Declaration
-const warn_Group = '*[Group Only]* _Perintah ini hanya digunakan didalam grup!_'
-const warnAdmin_Group = '*[GROUP]* _Perintah ini hanya digunakan untuk admin group!_'
-const warnReqBotAdmin_Group = '*[GROUP]* _Tambahkan bot ke Admin Group'
-
 //! [BETA] Avoid Spam Message
         if (isCmd && msgFilter.isFiltered(from) && !isGroupMsg) { return console.log(color('[SPAM]', 'red'), color(moment(t * 1000).format('DD/MM/YY HH:mm:ss'), 'yellow'), color(`${command} [${args.length}]`), 'from', color(pushname)) }
         if (isCmd && msgFilter.isFiltered(from) && isGroupMsg) { return console.log(color('[SPAM]', 'red'), color(moment(t * 1000).format('DD/MM/YY HH:mm:ss'), 'yellow'), color(`${command} [${args.length}]`), 'from', color(pushname), 'in', color(name || formattedTitle)) }
@@ -61,14 +55,17 @@ const warnReqBotAdmin_Group = '*[GROUP]* _Tambahkan bot ke Admin Group'
             await client.sendText(from, `Ping Pong!!!!\nSpeed: ${processTime(t, moment())} _Second_`)
             break
         case 'tnc':
-        case 'syarat':
-        case 'aturan':
             await client.sendText(from, menuId.textTnC())
             break
         case 'menu':
         case 'help':
             await client.sendText(from, menuId.textMenu(pushname))
                 .then(() => ((isGroupMsg) && (isGroupAdmins)) ? client.sendText(from, 'Menu Admin Grup: *#menuadmin*') : null)
+            break
+        case 'menuadmin':
+            if (!isGroupMsg) return client.reply(from, 'Maaf, perintah ini hanya dapat dipakai didalam grup! [Group Only]', id)
+            if (!isGroupAdmins) return client.reply(from, 'Gagal, perintah ini hanya dapat digunakan oleh admin grup! [Admin Group Only]', id)
+            await client.sendText(from, menuId.textAdmin())
             break
         case 'donate':
         case 'donasi':
@@ -224,7 +221,6 @@ const warnReqBotAdmin_Group = '*[GROUP]* _Tambahkan bot ke Admin Group'
             })
                 .catch((err) => client.reply(from, `Error, url tidak valid atau tidak memuat video. [Invalid Link or No Video] \n\n${err}`, id))
             break
-
 //! Other Command
         case 'meme':
             if ((isMedia || isQuotedImage) && args.length >= 2) {
@@ -270,20 +266,11 @@ const warnReqBotAdmin_Group = '*[GROUP]* _Tambahkan bot ke Admin Group'
             const text = `*CEK LOKASI PENYEBARAN COVID-19*\nHasil pemeriksaan dari lokasi yang anda kirim adalah *${zoneStatus.status}* ${zoneStatus.optional}\n\nInformasi lokasi terdampak disekitar anda:\n${data}`
             client.sendText(from, text)
             break
-
-//ANCHOR
-//* Make declarations for String
 //! Group Commands (group admin only)
-            //! Group Command
-        case 'menuadmin':
-            if (!isGroupMsg) return client.reply(from, warn_Group, id)
-            if (!isGroupAdmins) return client.reply(from, warnAdmin_Group, id)
-            await client.sendText(from, menuId.textAdmin())
-            break
         case 'kick':
-            if (!isGroupMsg) return client.reply(from, warn_Group, id)
-            if (!isGroupAdmins) return client.reply(from, warnAdmin_Group, id)
-            if (!isBotGroupAdmins) return client.reply(from, warnReqBotAdmin_Group, id)
+            if (!isGroupMsg) return client.reply(from, 'Maaf, perintah ini hanya dapat dipakai didalam grup! [Group Only]', id)
+            if (!isGroupAdmins) return client.reply(from, 'Gagal, perintah ini hanya dapat digunakan oleh admin grup! [Admin Group Only]', id)
+            if (!isBotGroupAdmins) return client.reply(from, 'Gagal, silahkan tambahkan bot sebagai admin grup! [Bot Not Admin]', id)
             if (mentionedJidList.length === 0) return client.reply(from, 'Maaf, format pesan salah silahkan periksa menu. [Wrong Format]', id)
             if (mentionedJidList[0] === botNumber) return await client.reply(from, 'Maaf, format pesan salah silahkan periksa menu. [Wrong Format]', id)
             await client.sendTextWithMentions(from, `Request diterima, mengeluarkan:\n${mentionedJidList.map(x => `@${x.replace('@c.us', '')}`).join('\n')}`)
