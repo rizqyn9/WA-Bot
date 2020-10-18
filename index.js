@@ -1,6 +1,6 @@
 const { create, Client } = require('@open-wa/wa-automate')
 const { color } = require('./utils')
-const messageHandler = require('./message/handler');
+const messageHandler = require('./message/handler/index.js~');
 const options = require('./utils/options');
 
 
