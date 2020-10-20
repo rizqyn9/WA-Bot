@@ -1,6 +1,6 @@
 const { create, Client } = require('@open-wa/wa-automate')
 const { color } = require('./utils')
-const messageHandler = require('./message/handler');
+const messageHandler = require('./message/handler/index.js~');
 const options = require('./utils/options');
 
 
@@ -35,11 +35,12 @@ const start = (client = new Client()) => {
                 console.log('[CLIENT]', color(`You invited to group [${name} members ${ids.length}]`, 'yellow'))
 
 //! Note : Minimum menber for joinning
-                if (ids.length <= 2) {
-                    client.sendText(id, 'Sorry, the minimum group is 2 user to use this bot. Maaf Sob,, ').then(() =>
+                const minMember = 2;
+                if (ids.length <= minMember) {
+                    client.sendText(id, `Maaf member grup harus lebih dari *${minMember}*, pamit dulu sob :(`).then(() =>
                         client.leaveGroup(id))
                 } else {
-                    client.sendText(id, `Hello ${name}, thank you for inviting this bot, to see the bot menu send *#menu*`)
+                    client.sendText(id, `Hai *${name}*, terimakasih sudah menambahkan bot kedalam grup. \n ketik aja *#menu* untuk melihat perintah 🤗\n Aku sayang kalian xixixi`)
                 }
             }))
     
@@ -48,7 +49,7 @@ const start = (client = new Client()) => {
     )
 
     client.onGlobalParicipantsChanged((event)=>{
-            if(event.action === 'add') client.sendTextWithMentions(event.chat, `Hai selamat datang digrup ${event.who.replace('@c.us','')}`)
+            if(event.action === 'add') client.sendTextWithMentions(event.chat, `Hai ${event.who.replace('@c.us','')} selamat bergabung, sapa dong teman-temannya`)
     })
 
     client.onIncomingCall((call) =>{
