@@ -1,6 +1,6 @@
 exports.textTnC = () => {
     return `
-    *Salam Rizqy-Bot*
+    *Salam Rizqy-SC*
     
     Source code ini hanya berjalan pada program keamanan privasi akan lebih terjamin, namun jika ada error ataupun bot mati bisa hubungi Admin.
 
@@ -19,7 +19,7 @@ exports.textTnC = () => {
 
 exports.textMenu = (pushname) => {
     return `
-Halo ${pushname}! 
+Halo *${pushname}!* 
 
 Menu dan cara penggunaan bot ini :
 
