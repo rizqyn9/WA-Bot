@@ -5,12 +5,12 @@ const options = require('./utils/options');
 
 
 const start = (client = new Client()) => {
-    console.log(color('[BOT]','red'), color('RIZQY - BOT', 'yellow'))
-    console.log(color('[CLIENT] Client started!','yellow'))
+    console.log('[BOT]', color('RIZQY - BOT', 'yellow'))
+    console.log('[CLIENT] Client started!')
 
     //*FORCE CURRENT SESSION
     client.onStateChanged((state) => {
-        console.log(color('[CLIENT] State','red'), state)
+        console.log('[CLIENT] State', state)
         if (state === 'CONFLICT') client.forceRefocus()
     })
         
@@ -20,7 +20,7 @@ const start = (client = new Client()) => {
         client.getAmountOfLoadedMessages()  //* Clear message cache if cache more than blablabla (default == 3000)
             .then((msg) => {
                 if (msg >= 4000) {
-                    console.log(color('[CLIENT]','blue'), color(`Load message ${msg}, message cache`, 'yellow'))
+                    console.log('[CLIENT]', color(`Load message ${msg}, message cache`, 'yellow'))
                     client.cutMsgCache()
                 }
             })
@@ -31,17 +31,15 @@ const start = (client = new Client()) => {
     client.onAddedToGroup(({ groupMetadata: { id }, contact: { name } }) =>
         client.getGroupMembersId(id)
             .then((ids) => {
-                console.log(color('[CLIENT]','red'), color(`You invited to group [${name} members ${ids.length}]`, 'yellow'))
+                console.log('[CLIENT]', color(`You invited to group [${name} members ${ids.length}]`, 'yellow'))
 
 //! Note : Minimum menber for joinning
-                const minMember = 2;
+                const minMember = 1;
                 if (ids.length <= minMember) {
                     client.sendText(id, `Maaf member grup harus lebih dari *${minMember}*, pamit dulu sob :(`).then(() =>
                         client.leaveGroup(id))
                 } else {
-                    client.sendText(id, `Hai *${name}*, terimakasih sudah menambahkan bot kedalam grup. 
-                    Ketik aja *!menu* untuk melihat perintah 🤗 
-                    Aku sayang kalian xixixi`)
+                    client.sendText(id, `Hai *${name}*, terimakasih sudah menambahkan bot kedalam grup. \n ketik aja *#menu* untuk melihat perintah 🤗\n Aku sayang kalian xixixi`)
                 }
             }))
     
