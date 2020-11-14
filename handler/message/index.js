@@ -3,17 +3,15 @@ const { decryptMedia, Client } = require('@open-wa/wa-automate')
 const moment = require('moment-timezone')
 moment.tz.setDefault('Asia/Jakarta').locale('id')
 const { downloader, cekResi, removebg, urlShortener, meme, translate, getLocationData } = require('../../lib')
-const { msgFilter, color, processTime, isUrl } = require('../../utils')
+const { msgFilter, color, processTime, is } = require('../../utils')
 const mentionList = require('../../utils/mention')
 const { uploadImages } = require('../../utils/fetcher')
 
 const { menuId, menuEn } = require('./text') // Indonesian & English menu
 
-
-//ANCHOR Task Today
-module.exports = msgHandler = async (client = new Client(), message) => {
+module.exports = msgHandler = async (client, message) => {
     try {
-        const { type, id, from, t, sender, isGroupMsg, chat, caption, isMedia, mimetype, quotedMsg, quotedMsgObj, mentionedJidList } = message
+        const { type, id, from, t, sender, isGroupMsg, chat, caption, isMedia, isGif, mimetype, quotedMsg, quotedMsgObj, mentionedJidList } = message
         let { body } = message
         const { name, formattedTitle } = chat
         let { pushname, verifiedName, formattedName } = sender
@@ -25,18 +23,18 @@ module.exports = msgHandler = async (client = new Client(), message) => {
         const isGroupAdmins = groupAdmins.includes(sender.id) || false
         const isBotGroupAdmins = groupAdmins.includes(botNumber) || false
 
-//! Bot Prefix
-        const prefix = '!' || '#'
-        body = (type === 'chat' && body.startsWith(prefix)) ? body : ((type === 'image' && caption) && caption.startsWith(prefix)) ? caption : ''
+        // Bot Prefix
+        const prefix = '#'
+        body = (type === 'chat' && body.startsWith(prefix)) ? body : (((type === 'image' || type === 'video') && caption) && caption.startsWith(prefix)) ? caption : ''
         const command = body.slice(1).trim().split(/ +/).shift().toLowerCase()
-        const arg = body.trim().substring(body.indexOf(' ') + 1)
+        const arg = body.substring(body.indexOf(' ') + 1)
         const args = body.trim().split(/ +/).slice(1)
         const isCmd = body.startsWith(prefix)
-        const uaOverride = process.env.UserAgent
-        const url = args.length !== 0 ? args[0] : ''
         const isQuotedImage = quotedMsg && quotedMsg.type === 'image'
+        const url = args.length !== 0 ? args[0] : ''
+        const uaOverride = process.env.UserAgent
 
-//! [BETA] Avoid Spam Message
+        // [BETA] Avoid Spam Message
         if (isCmd && msgFilter.isFiltered(from) && !isGroupMsg) { return console.log(color('[SPAM]', 'red'), color(moment(t * 1000).format('DD/MM/YY HH:mm:ss'), 'yellow'), color(`${command} [${args.length}]`), 'from', color(pushname)) }
         if (isCmd && msgFilter.isFiltered(from) && isGroupMsg) { return console.log(color('[SPAM]', 'red'), color(moment(t * 1000).format('DD/MM/YY HH:mm:ss'), 'yellow'), color(`${command} [${args.length}]`), 'from', color(pushname), 'in', color(name || formattedTitle)) }
         //
@@ -44,15 +42,14 @@ module.exports = msgHandler = async (client = new Client(), message) => {
         if (!isCmd && isGroupMsg) { return console.log('[RECV]', color(moment(t * 1000).format('DD/MM/YY HH:mm:ss'), 'yellow'), 'Message from', color(pushname), 'in', color(name || formattedTitle)) }
         if (isCmd && !isGroupMsg) { console.log(color('[EXEC]'), color(moment(t * 1000).format('DD/MM/YY HH:mm:ss'), 'yellow'), color(`${command} [${args.length}]`), 'from', color(pushname)) }
         if (isCmd && isGroupMsg) { console.log(color('[EXEC]'), color(moment(t * 1000).format('DD/MM/YY HH:mm:ss'), 'yellow'), color(`${command} [${args.length}]`), 'from', color(pushname), 'in', color(name || formattedTitle)) }
-
-//! [BETA] Avoid Spam Message
+        // [BETA] Avoid Spam Message
         msgFilter.addFilter(from)
 
         switch (command) {
-//! Menu and TnC
+        // Menu and TnC
         case 'speed':
         case 'ping':
-            await client.sendText(from, `Ping Pong!!!!\nSpeed: ${processTime(t, moment())} _Second_`)
+            await client.sendText(from, `Pong!!!!\nSpeed: ${processTime(t, moment())} _Second_`)
             break
         case 'tnc':
             await client.sendText(from, menuId.textTnC())
@@ -71,8 +68,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
         case 'donasi':
             await client.sendText(from, menuId.textDonasi())
             break
-
-//! Sticker Creator
+        // Sticker Creator
         case 'sticker':
         case 'stiker': {
             if ((isMedia || isQuotedImage) && args.length === 0) {
@@ -81,7 +77,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
                 const mediaData = await decryptMedia(encryptMedia, uaOverride)
                 const imageBase64 = `data:${_mimetype};base64,${mediaData.toString('base64')}`
                 client.sendImageAsSticker(from, imageBase64).then(() => {
-                    client.reply(from, 'Nih sticker mu xixixi')
+                    client.reply(from, 'Here\'s your sticker')
                     console.log(`Sticker Processed for ${processTime(t, moment())} Second`)
                 })
             } else if (args[0] === 'nobg') {
@@ -91,10 +87,10 @@ module.exports = msgHandler = async (client = new Client(), message) => {
                 */
                 client.reply(from, 'ehhh, what\'s that???', id)
             } else if (args.length === 1) {
-                if (!isUrl(url)) { await client.reply(from, 'Maaf, link yang kamu kirim tidak valid. [Invalid Link]', id) }
+                if (!is.Url(url)) { await client.reply(from, 'Maaf, link yang kamu kirim tidak valid. [Invalid Link]', id) }
                 client.sendStickerfromUrl(from, url).then((r) => (!r && r !== undefined)
                     ? client.sendText(from, 'Maaf, link yang kamu kirim tidak memuat gambar. [No Image]')
-                    : client.reply(from, 'Nih sticker mu xixixi')).then(() => console.log(`Sticker Processed for ${processTime(t, moment())} Second`))
+                    : client.reply(from, 'Here\'s your sticker')).then(() => console.log(`Sticker Processed for ${processTime(t, moment())} Second`))
             } else {
                 await client.reply(from, 'Tidak ada gambar! Untuk membuka daftar perintah kirim #menu [Wrong Format]', id)
             }
@@ -105,23 +101,21 @@ module.exports = msgHandler = async (client = new Client(), message) => {
         case 'gifstiker':
         case 'gifsticker': {
             if (args.length !== 1) return client.reply(from, 'Maaf, format pesan salah silahkan periksa menu. [Wrong Format]', id)
-            const isGiphy = url.match(new RegExp(/https?:\/\/(www\.)?giphy.com/, 'gi'))
-            const isMediaGiphy = url.match(new RegExp(/https?:\/\/media.giphy.com\/media/, 'gi'))
-            if (isGiphy) {
+            if (is.Giphy(url)) {
                 const getGiphyCode = url.match(new RegExp(/(\/|\-)(?:.(?!(\/|\-)))+$/, 'gi'))
                 if (!getGiphyCode) { return client.reply(from, 'Gagal mengambil kode giphy', id) }
                 const giphyCode = getGiphyCode[0].replace(/[-\/]/gi, '')
                 const smallGifUrl = 'https://media.giphy.com/media/' + giphyCode + '/giphy-downsized.gif'
                 client.sendGiphyAsSticker(from, smallGifUrl).then(() => {
-                    client.reply(from, 'Nih sticker mu xixixi')
+                    client.reply(from, 'Here\'s your sticker')
                     console.log(`Sticker Processed for ${processTime(t, moment())} Second`)
                 }).catch((err) => console.log(err))
-            } else if (isMediaGiphy) {
+            } else if (is.MediaGiphy(url)) {
                 const gifUrl = url.match(new RegExp(/(giphy|source).(gif|mp4)/, 'gi'))
                 if (!gifUrl) { return client.reply(from, 'Gagal mengambil kode giphy', id) }
                 const smallGifUrl = url.replace(gifUrl[0], 'giphy-downsized.gif')
                 client.sendGiphyAsSticker(from, smallGifUrl).then(() => {
-                    client.reply(from, 'Nih sticker mu xixixi')
+                    client.reply(from, 'Here\'s your sticker')
                     console.log(`Sticker Processed for ${processTime(t, moment())} Second`)
                 }).catch((err) => console.log(err))
             } else {
@@ -129,10 +123,10 @@ module.exports = msgHandler = async (client = new Client(), message) => {
             }
             break
         }
-//! Video Downloader
+        // Video Downloader
         case 'tiktok':
             if (args.length !== 1) return client.reply(from, 'Maaf, format pesan salah silahkan periksa menu. [Wrong Format]', id)
-            if (!isUrl(url) && !url.includes('tiktok.com')) return client.reply(from, 'Maaf, link yang kamu kirim tidak valid. [Invalid Link]', id)
+            if (!is.Url(url) && !url.includes('tiktok.com')) return client.reply(from, 'Maaf, link yang kamu kirim tidak valid. [Invalid Link]', id)
             await client.reply(from, `_Scraping Metadata..._ \n\n${menuId.textDonasi()}`, id)
             downloader.tiktok(url).then(async (videoMeta) => {
                 const filename = videoMeta.authorMeta.name + '.mp4'
@@ -145,7 +139,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
         case 'ig':
         case 'instagram':
             if (args.length !== 1) return client.reply(from, 'Maaf, format pesan salah silahkan periksa menu. [Wrong Format]', id)
-            if (!isUrl(url) && !url.includes('instagram.com')) return client.reply(from, 'Maaf, link yang kamu kirim tidak valid. [Invalid Link]', id)
+            if (!is.Url(url) && !url.includes('instagram.com')) return client.reply(from, 'Maaf, link yang kamu kirim tidak valid. [Invalid Link]', id)
             await client.reply(from, `_Scraping Metadata..._ \n\n${menuId.textDonasi()}`, id)
             downloader.insta(url).then(async (data) => {
                 if (data.type == 'GraphSidecar') {
@@ -170,6 +164,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
                 }
             })
                 .catch((err) => {
+                    console.log(err)
                     if (err === 'Not a video') { return client.reply(from, 'Error, tidak ada video di link yang kamu kirim. [Invalid Link]', id) }
                     client.reply(from, 'Error, user private atau link salah [Private or Invalid Link]', id)
                 })
@@ -177,7 +172,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
         case 'twt':
         case 'twitter':
             if (args.length !== 1) return client.reply(from, 'Maaf, format pesan salah silahkan periksa menu. [Wrong Format]', id)
-            if (!isUrl(url) & !url.includes('twitter.com') || url.includes('t.co')) return client.reply(from, 'Maaf, url yang kamu kirim tidak valid. [Invalid Link]', id)
+            if (!is.Url(url) & !url.includes('twitter.com') || url.includes('t.co')) return client.reply(from, 'Maaf, url yang kamu kirim tidak valid. [Invalid Link]', id)
             await client.reply(from, `_Scraping Metadata..._ \n\n${menuId.textDonasi()}`, id)
             downloader.tweet(url).then(async (data) => {
                 if (data.type === 'video') {
@@ -200,7 +195,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
         case 'fb':
         case 'facebook':
             if (args.length !== 1) return client.reply(from, 'Maaf, format pesan salah silahkan periksa menu. [Wrong Format]', id)
-            if (!isUrl(url) && !url.includes('facebook.com')) return client.reply(from, 'Maaf, url yang kamu kirim tidak valid. [Invalid Link]', id)
+            if (!is.Url(url) && !url.includes('facebook.com')) return client.reply(from, 'Maaf, url yang kamu kirim tidak valid. [Invalid Link]', id)
             await client.reply(from, '_Scraping Metadata..._ \n\nTerimakasih telah menggunakan bot ini, kamu dapat membantu pengembangan bot ini dengan menyawer melalui https://saweria.co/donate/yogasakti atau mentrakteer melalui https://trakteer.id/red-emperor \nTerimakasih.', id)
             downloader.facebook(url).then(async (videoMeta) => {
                 const title = videoMeta.response.title
@@ -221,7 +216,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
             })
                 .catch((err) => client.reply(from, `Error, url tidak valid atau tidak memuat video. [Invalid Link or No Video] \n\n${err}`, id))
             break
-//! Other Command
+        // Other Command
         case 'meme':
             if ((isMedia || isQuotedImage) && args.length >= 2) {
                 const top = arg.split('|')[0]
@@ -250,10 +245,11 @@ module.exports = msgHandler = async (client = new Client(), message) => {
             const quoteText = quotedMsg.type == 'chat' ? quotedMsg.body : quotedMsg.type == 'image' ? quotedMsg.caption : ''
             translate(quoteText, args[0])
                 .then((result) => client.sendText(from, result))
-                .catch(() => client.sendText(from, 'Error, Kode bahasa salah.'))
+                .catch(() => client.sendText(from, '[Error] Kode bahasa salah atau server bermasalah.'))
             break
+        case 'ceklok':
         case 'ceklokasi':
-            if (quotedMsg.type !== 'location') return client.reply(from, 'Maaf, format pesan salah silahkan periksa menu. [Wrong Format]', id)
+            if (!quotedMsg || quotedMsg.type !== 'location') return client.reply(from, 'Maaf, format pesan salah silahkan periksa menu. [Wrong Format]', id)
             console.log(`Request Status Zona Penyebaran Covid-19 (${quotedMsg.lat}, ${quotedMsg.lng}).`)
             const zoneStatus = await getLocationData(quotedMsg.lat, quotedMsg.lng)
             if (zoneStatus.kode !== 200) client.sendText(from, 'Maaf, Terjadi error ketika memeriksa lokasi yang anda kirim.')
@@ -266,7 +262,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
             const text = `*CEK LOKASI PENYEBARAN COVID-19*\nHasil pemeriksaan dari lokasi yang anda kirim adalah *${zoneStatus.status}* ${zoneStatus.optional}\n\nInformasi lokasi terdampak disekitar anda:\n${data}`
             client.sendText(from, text)
             break
-//! Group Commands (group admin only)
+        // Group Commands (group admin only)
         case 'kick':
             if (!isGroupMsg) return client.reply(from, 'Maaf, perintah ini hanya dapat dipakai didalam grup! [Group Only]', id)
             if (!isGroupAdmins) return client.reply(from, 'Gagal, perintah ini hanya dapat digunakan oleh admin grup! [Admin Group Only]', id)
@@ -316,7 +312,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
             * This is Premium feature.
             * Check premium feature at https://trakteer.id/red-emperor/showcase or chat Author for Information.
             */
-            client.reply(from, 'ehhh, what\'s that???', id)
+            client.reply(from, 'ehhh, what\'s that??? \n Check premium feature at https://trakteer.id/red-emperor/showcase or chat Author for Information', id)
             break
         case 'botstat': {
             const loadedMsg = await client.getAmountOfLoadedMessages()
@@ -330,6 +326,6 @@ module.exports = msgHandler = async (client = new Client(), message) => {
             break
         }
     } catch (err) {
-        console.log(color('[ERROR]', 'red'), err)
+        console.error(color(err, 'red'))
     }
 }

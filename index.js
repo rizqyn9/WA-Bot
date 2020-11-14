@@ -1,64 +1,73 @@
 const { create, Client } = require('@open-wa/wa-automate')
-const { color } = require('./utils')
-const messageHandler = require('./message/handler/index.js~');
-const options = require('./utils/options');
-
+const { color, messageLog } = require('./utils')
+const msgHandler = require('./handler/message')
 
 const start = (client = new Client()) => {
-    console.log('[BOT]', color('RIZQY - BOT', 'yellow'))
-    console.log('[CLIENT] Client started!')
+    console.log('[DEV]', color('Red Emperor', 'yellow'))
+    console.log('[CLIENT] CLIENT Started!')
 
-    //*FORCE CURRENT SESSION
+    // Message log for analytic
+    client.onAnyMessage((fn) => messageLog(fn.fromMe, fn.type))
+
+    // Force it to keep the current session
     client.onStateChanged((state) => {
-        console.log('[CLIENT] State', state)
-        if (state === 'CONFLICT') client.forceRefocus()
+        console.log('[Client State]', state)
+        if (state === 'CONFLICT' || state === 'DISCONNECTED') client.forceRefocus()
     })
-        
 
-    //*LISTENING ON MESSAGE 
+    // listening on message
     client.onMessage((message) => {
-        client.getAmountOfLoadedMessages()  //* Clear message cache if cache more than blablabla (default == 3000)
-            .then((msg) => {
-                if (msg >= 4000) {
-                    console.log('[CLIENT]', color(`Load message ${msg}, message cache`, 'yellow'))
-                    client.cutMsgCache()
-                }
-            })
-        messageHandler(client, message)
+        // Cut message Cache if cache more than 3K
+        client.getAmountOfLoadedMessages().then((msg) => (msg >= 3000) && client.cutMsgCache())
+        // Message Handler
+        msgHandler(client, message)
     })
 
-//! For Group invitation
+    // listen group invitation
     client.onAddedToGroup(({ groupMetadata: { id }, contact: { name } }) =>
         client.getGroupMembersId(id)
             .then((ids) => {
-                console.log('[CLIENT]', color(`You invited to group [${name} members ${ids.length}]`, 'yellow'))
-
-//! Note : Minimum menber for joinning
-                const minMember = 1;
-                if (ids.length <= minMember) {
-                    client.sendText(id, `Maaf member grup harus lebih dari *${minMember}*, pamit dulu sob :(`).then(() =>
-                        client.leaveGroup(id))
+                console.log('[CLIENT]', color(`Invited to Group. [ ${name} => ${ids.length}]`, 'yellow'))
+                // conditions if the group members are less than 10 then the bot will leave the group
+                if (ids.length <= 10) {
+                    client.sendText(id, 'Sorry, the minimum group member is 10 user to use this bot. Bye~').then(() => client.leaveGroup(id))
                 } else {
-                    client.sendText(id, `Hai *${name}*, terimakasih sudah menambahkan bot kedalam grup. \n ketik aja *#menu* untuk melihat perintah 🤗\n Aku sayang kalian xixixi`)
+                    client.sendText(id, `Hello group members *${name}*, thank you for inviting this bot, to see the bot menu send *#menu*`)
                 }
             }))
-    
-    client.onRemovedFromGroup((data) =>
-            console.log(data)
-    )
 
-    client.onGlobalParicipantsChanged((event)=>{
-            if(event.action === 'add') client.sendTextWithMentions(event.chat, `Hai ${event.who.replace('@c.us','')} selamat bergabung, sapa dong teman-temannya`)
+    // listen paricipant event on group (wellcome message)
+    client.onGlobalParicipantsChanged(async (event) => {
+        // const host = await client.getHostNumber() + '@c.us'
+        // if (event.action === 'add' && event.who !== host) client.sendTextWithMentions(event.chat, `Hello, Welcome to the group @${event.who.replace('@c.us', '')} \n\nHave fun with us✨`)
     })
 
-    client.onIncomingCall((call) =>{
-        client.contactBlock(call.peerJid)
+    client.onIncomingCall((callData) => {
+        // client.contactBlock(callData.peerJid)
     })
 }
 
+const options = {
+    sessionId: 'Imperial',
+    headless: true,
+    qrTimeout: 0,
+    authTimeout: 0,
+    restartOnCrash: start,
+    cacheEnabled: false,
+    useChrome: true,
+    killProcessOnBrowserClose: true,
+    throwErrorOnTosBlock: false,
+    chromiumArgs: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--aggressive-cache-discard',
+        '--disable-cache',
+        '--disable-application-cache',
+        '--disable-offline-load-stale-cache',
+        '--disk-cache-size=0'
+    ]
+}
 
-create('Imperial', options(true, start))
+create(options)
     .then((client) => start(client))
-    .then((error) => new Error(error))
-
-
+    .catch((err) => new Error(err))
