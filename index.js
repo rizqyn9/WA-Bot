@@ -1,73 +1,88 @@
 const { create, Client } = require('@open-wa/wa-automate')
+const figlet = require('figlet')
+const options = require('./utils/options')
 const { color, messageLog } = require('./utils')
-const msgHandler = require('./handler/message')
+const HandleMsg = require('./HandleMsg')
 
-const start = (client = new Client()) => {
-    console.log('[DEV]', color('Red Emperor', 'yellow'))
-    console.log('[CLIENT] CLIENT Started!')
+const start = (pakforlay = new Client()) => {
+    console.log(color(figlet.textSync('----------------', { horizontalLayout: 'default' })))
+    console.log(color(figlet.textSync('PakForlay BOT', { font: 'Ghost', horizontalLayout: 'default' })))
+    console.log(color(figlet.textSync('----------------', { horizontalLayout: 'default' })))
+    console.log(color('[DEV]'), color('pakforlay', 'yellow'))
+    console.log(color('[~>>]'), color('BOT Started!', 'green'))
 
-    // Message log for analytic
-    client.onAnyMessage((fn) => messageLog(fn.fromMe, fn.type))
-
-    // Force it to keep the current session
-    client.onStateChanged((state) => {
-        console.log('[Client State]', state)
-        if (state === 'CONFLICT' || state === 'DISCONNECTED') client.forceRefocus()
+    // Mempertahankan sesi agar tetap nyala
+    pakforlay.onStateChanged((state) => {
+        console.log(color('[~>>]', 'red'), state)
+        if (state === 'CONFLICT' || state === 'UNLAUNCHED') pakforlay.forceRefocus()
     })
 
-    // listening on message
-    client.onMessage((message) => {
-        // Cut message Cache if cache more than 3K
-        client.getAmountOfLoadedMessages().then((msg) => (msg >= 3000) && client.cutMsgCache())
-        // Message Handler
-        msgHandler(client, message)
+    // ketika bot diinvite ke dalam group
+    pakforlay.onAddedToGroup(async (chat) => {
+	const groups = await pakforlay.getAllGroups()
+	// kondisi ketika batas group bot telah tercapai,ubah di file settings/setting.json
+	if (groups.length > groupLimit) {
+	await pakforlay.sendText(chat.id, `Sorry, the group on this bot is full\nMax Group is: ${groupLimit}`).then(() => {
+	      pakforlay.leaveGroup(chat.id)
+	      pakforlay.deleteChat(chat.id)
+	  }) 
+	} else {
+	// kondisi ketika batas member group belum tercapai, ubah di file settings/setting.json
+	    if (chat.groupMetadata.participants.length < memberLimit) {
+	    await pakforlay.sendText(chat.id, `Sorry, BOT comes out if the group members do not exceed ${memberLimit} people`).then(() => {
+	      pakforlay.leaveGroup(chat.id)
+	      pakforlay.deleteChat(chat.id)
+	    })
+	    } else {
+        await pakforlay.simulateTyping(chat.id, true).then(async () => {
+          await pakforlay.sendText(chat.id, `Hai minna~, Im pakforlay BOT. To find out the commands on this bot type ${prefix}menu`)
+        })
+	    }
+	}
     })
 
-    // listen group invitation
-    client.onAddedToGroup(({ groupMetadata: { id }, contact: { name } }) =>
-        client.getGroupMembersId(id)
-            .then((ids) => {
-                console.log('[CLIENT]', color(`Invited to Group. [ ${name} => ${ids.length}]`, 'yellow'))
-                // conditions if the group members are less than 10 then the bot will leave the group
-                if (ids.length <= 10) {
-                    client.sendText(id, 'Sorry, the minimum group member is 10 user to use this bot. Bye~').then(() => client.leaveGroup(id))
-                } else {
-                    client.sendText(id, `Hello group members *${name}*, thank you for inviting this bot, to see the bot menu send *#menu*`)
+    // ketika seseorang masuk/keluar dari group
+    pakforlay.onGlobalParicipantsChanged(async (event) => {
+        const host = await pakforlay.getHostNumber() + '@c.us'
+        // kondisi ketika seseorang diinvite/join group lewat link
+        if (event.action === 'add' && event.who !== host) {
+            await pakforlay.sendTextWithMentions(event.chat, `Hello, Welcome to the group @${event.who.replace('@c.us', '')} \n\nHave fun with us✨`)
+        }
+        // kondisi ketika seseorang dikick/keluar dari group
+        if (event.action === 'remove' && event.who !== host) {
+            await pakforlay.sendTextWithMentions(event.chat, `Good bye @${event.who.replace('@c.us', '')}, We'll miss you✨`)
+        }
+    })
+
+    pakforlay.onIncomingCall(async (callData) => {
+        // ketika seseorang menelpon nomor bot akan mengirim pesan
+        await pakforlay.sendText(callData.peerJid, 'Maaf sedang tidak bisa menerima panggilan.\n\n-bot')
+        .then(async () => {
+            // bot akan memblock nomor itu
+            await pakforlay.contactBlock(callData.peerJid)
+        })
+    })
+
+    // ketika seseorang mengirim pesan
+    pakforlay.onMessage(async (message) => {
+        pakforlay.getAmountOfLoadedMessages() // menghapus pesan cache jika sudah 3000 pesan.
+            .then((msg) => {
+                if (msg >= 3000) {
+                    console.log('[pakforlay]', color(`Loaded Message Reach ${msg}, cuting message cache...`, 'yellow'))
+                    pakforlay.cutMsgCache()
                 }
-            }))
-
-    // listen paricipant event on group (wellcome message)
-    client.onGlobalParicipantsChanged(async (event) => {
-        // const host = await client.getHostNumber() + '@c.us'
-        // if (event.action === 'add' && event.who !== host) client.sendTextWithMentions(event.chat, `Hello, Welcome to the group @${event.who.replace('@c.us', '')} \n\nHave fun with us✨`)
+            })
+        HandleMsg(pakforlay, message)    
+    
     })
-
-    client.onIncomingCall((callData) => {
-        // client.contactBlock(callData.peerJid)
+	
+    // Message log for analytic
+    pakforlay.onAnyMessage((anal) => { 
+        messageLog(anal.fromMe, anal.type)
     })
 }
 
-const options = {
-    sessionId: 'Imperial',
-    headless: true,
-    qrTimeout: 0,
-    authTimeout: 0,
-    restartOnCrash: start,
-    cacheEnabled: false,
-    useChrome: true,
-    killProcessOnBrowserClose: true,
-    throwErrorOnTosBlock: false,
-    chromiumArgs: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--aggressive-cache-discard',
-        '--disable-cache',
-        '--disable-application-cache',
-        '--disable-offline-load-stale-cache',
-        '--disk-cache-size=0'
-    ]
-}
-
-create(options)
-    .then((client) => start(client))
+//create session
+create(options(true, start))
+    .then((pakforlay) => start(pakforlay))
     .catch((err) => new Error(err))
