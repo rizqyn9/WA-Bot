@@ -1,0 +1,7 @@
+{
+    "compile-hero.disable-compile-files-on-did-save-code": false,
+    "key": "cmd+y",
+    "command": "HookyQR.beautify",
+    "when": "editorFocus",
+    "workbench.editor.enablePreview": false
+}

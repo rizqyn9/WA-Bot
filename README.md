@@ -1,4 +1,4 @@
-<p align="center">
+<!-- <p align="center">
 <img src="https://avatars1.githubusercontent.com/u/60418550?s=460&u=f6aadbde2bd1f35ca7ba5cb75b800b002c298d48&v=4" width="128" height="128"/>
 </p>
 <div align="center">
@@ -180,4 +180,10 @@ Fix Stuck on linux, install google chrome stable:
 - [YogaSakti](https://github.com/YogaSakti/imageToSticker)
 - [MhankBarBar](https://github.com/MhankBarBar/whatsapp-bot)
 - [dandyraka](https://github.com/dandyraka/NoBadWord)
-- [ArugaZ](https://github.com/ArugaZ/)
+- [ArugaZ](https://github.com/ArugaZ/) -->
+
+Hello everyone!
+
+This bot made by me CodeRizqy
+
+Stay safe and healthy
