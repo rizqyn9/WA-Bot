@@ -2,5 +2,8 @@
     "ownerNumber": "628985665498@c.us",
     "memberLimit": 1,
     "groupLimit": 100,
-    "prefix": "#"
-  }
+    "prefix": "#",
+    "WA_Owner": "https://wa.me/628985665498?text=Feedback%20%3A%20",
+    "botVersion" : "v1.0"
+
+}
