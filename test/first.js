@@ -1,5 +1,17 @@
-// const { bot, dev, exc, spam } = require('./console')
+//! Saya mau memnggil property dari file JSON langsung jadi Variable
 
-const con = require("./console")
+// * Script JSON
+// {
+//    "data1" : "dasd"
+//    "data2" : "dasd"
+//    "data3" : "dasd"
+// }
 
-console.log(con.bot)
+const {ownerNumber,groupLimit,memberLimit,prefix} = require('./../settings/setting.json')
+
+console.log(groupLimit)
+console.log(prefix)
+console.log(memberLimit)
+
+
+

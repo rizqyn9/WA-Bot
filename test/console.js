@@ -1,22 +1,21 @@
 const chalk = require('chalk')
 
-
-// ! For console bot command
-
-const bot=(chalk.yellow('[BOT]\t'))
-const dev=(chalk.magenta('[DEV]\t'))
-const exc=(chalk.blueBright('[EXC]\t'))
-const spam=(chalk.red('[SPAM]\t'))
-
-exports.tes = (e) => {
-    if(e=="bot") (chalk.yellow('[BOT]\t'));
+exports.bot = (string) => {
+    return chalk.yellow(`[BOT]\t`+`${string}`)
+}
+exports.dev = (string) => {
+    return chalk.magenta(`[DEV]\t`+`${string}`)
+}
+exports.exc = (string) => {
+    return chalk.blueBright(`[EXC]\t`+`${string}`)
+}
+exports.spam = (string) => {
+    return chalk.red(`[SPAM]\t`+`${string}`)
+}
+exports.warn = (string) => {
+    return chalk.bgRedBright.whiteBright(`[WARN]\t`+`${string}`)
+}
+exports.group = (string) => {
+    return chalk.bgRedBright.whiteBright(`[GROUP]\t`+`${string}`)
 }
 
-// module.exports = {
-//     con: {
-//         bot,
-//         dev,
-//         exc,
-//         spam
-//     }
-// }
